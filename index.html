@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Foot AI Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="bg"></div>
+
+<div class="container">
+
+    <div class="landscape">
+        <div class="left">
+            <h1>👣 Foot AI Analyzer</h1>
+            <p class="subtitle">Smart shoe recommendations from your foot scan</p>
+
+            <form action="/predict" method="POST" enctype="multipart/form-data" id="uploadForm">
+                <div class="drop-area" id="drop-area">
+                    <p>📤 Drag & Drop Image or Click</p>
+                    <input type="file" name="image" id="fileElem" required>
+                </div>
+
+                <img id="preview" />
+
+                <button type="submit">Analyze</button>
+                <div class="loader" id="loader"></div>
+            </form>
+
+            {% if error %}
+                <p style="color:red;">{{ error }}</p>
+            {% endif %}
+        </div>
+
+        <div class="right">
+            {% if foot_type %}
+            <div class="result">
+
+                <h2>🧠 Analysis Result</h2>
+
+                <div class="card">
+                    <p><strong>Foot Type</strong></p>
+                    <h3>{{ foot_type }}</h3>
+                </div>
+
+                <div class="card">
+                    <p><strong>Confidence</strong></p>
+                    <h3>{{ confidence }}%</h3>
+                </div>
+
+                <div class="card">
+                    <p><strong>Recommendation</strong></p>
+                    <h3>{{ recommendation }}</h3>
+                </div>
+
+                <h2>👟 Recommended Shoes</h2>
+
+                <div class="shoes-grid">
+                    {% for s in shoes %}
+                <div class="card shoe-card">
+                    <img src="{{ url_for('static', filename='images/' + s.image) }}" class="shoe-img" alt="{{ s.name }}" loading="lazy">
+                    <h3>{{ s.name }}</h3>
+                    {% if s.desc %}<p class="shoe-desc">{{ s.desc }}</p>{% endif %}
+                    {% if s.features %}
+                    <ul class="features">
+                        {% for f in s.features %}
+                        <li>{{ f }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                </div>
+
+                {% if processed_image %}
+                    <h2>📸 Processed Image</h2>
+                    <img src="data:image/jpeg;base64,{{ processed_image }}" class="output-img">
+                {% endif %}
+
+                <button onclick="window.location.href='/'">🔄 Try Another Image</button>
+
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+const dropArea = document.getElementById("drop-area");
+const fileInput = document.getElementById("fileElem");
+const preview = document.getElementById("preview");
+const loader = document.getElementById("loader");
+const form = document.getElementById("uploadForm");
+
+dropArea.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", function () {
+    preview.src = URL.createObjectURL(this.files[0]);
+    preview.style.display = "block";
+});
+
+dropArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropArea.classList.add("hover");
+});
+
+dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("hover");
+});
+
+dropArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    fileInput.files = e.dataTransfer.files;
+    preview.src = URL.createObjectURL(fileInput.files[0]);
+    preview.style.display = "block";
+});
+
+form.addEventListener("submit", () => {
+    loader.style.display = "block";
+});
+</script>
+
+</body>
+</html>
